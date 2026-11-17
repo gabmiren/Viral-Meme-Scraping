@@ -119,3 +119,5 @@ tr.exp .clip { -webkit-line-clamp: unset; }
   .grid { grid-template-columns: 1fr; }
   h1 { font-size: 24px; }
 }
+
+.card.made { border-color: #4ad6a055; }

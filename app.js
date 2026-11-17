@@ -28,6 +28,7 @@
       watched: (r.watched || '') === 'watched' || r.checked === 'yes',
       fromCaption: isIG || /not watched|from caption/i.test(r.watched || ''),
       caption: r.caption || '', url: r.url, date: r.date_found || '', flags: r.flags || '',
+      characters: r.characters || '', tool: r.tool || '', scene: r.scene || '', motion: r.motion || '', status: r.status || '', difficulty: r.difficulty || '', cost: r.est_cost || '',
     };
   };
   const T = (D.tiktok || []).map((r) => norm(r, r.platform || 'TikTok', 'tiktok'));
@@ -35,17 +36,19 @@
   const TR = (D.tiktok_rest || []).map((r) => norm(r, 'TikTok', 'rest'));
   const IR = (D.instagram_rest || []).map((r) => norm(r, 'Instagram', 'rest'));
   const DY = (D.daily || []).map((r) => norm(r, 'TikTok', 'daily'));
+  const AI = (D.ai || []).map((r) => norm(r, r.platform || 'TikTok', 'ai'));
   const ALL = [...TR, ...IR];
   const byId = new Map();
-  [...DY, ...ALL, ...T, ...I].forEach((it) => byId.set(it.id, it));
+  [...DY, ...ALL, ...T, ...I, ...AI].forEach((it) => byId.set(it.id, it));
 
   // ---- state ----
-  const st = { tab: (location.hash.slice(1) || 'tiktok'), tier: '', q: '', sort: 'rank', view: 'cards', hideUsed: false, plat: '', limit: 120 };
+  const st = { tab: (location.hash.slice(1) || 'tiktok'), tier: '', char: '', q: '', sort: 'rank', view: 'cards', hideUsed: false, plat: '', limit: 120 };
   try { const v = localStorage.getItem('vmr_view'); if (v) st.view = v; } catch {}
 
   const HINTS = {
     tiktok: 'Top 50 TikTok formats from the last 7 days. Tap the coral line to copy the trading version. ★ saves an idea, ✓ marks it as used once you have made it.',
     instagram: 'Top 50 Instagram reels from the last 14 days. Instagram gives no follower counts, so "vs their usual" compares against the account’s own recent reels. Hooks are written from captions, so watch before building.',
+    ai: 'Videos a real person performs on camera, so Mark or Cyan can re-perform them with Genjutsu or Seedance. No clips with text pasted on top. Each card says who plays it, the scene to set up, the move to copy and roughly what it costs.',
     saved: 'Everything you starred, across both platforms. Saved in this browser.',
     daily: 'New outliers from each daily 24-hour scan, newest day first.',
     all: 'Every other outlier from the scans. Click a row to expand the caption and breakdown.',
@@ -53,7 +56,8 @@
 
   // ---- filtering ----
   const match = (it) => {
-    if (st.tier && it.tier !== st.tier) return false;
+    if (st.tab !== 'ai' && st.tier && it.tier !== st.tier) return false;
+    if (st.tab === 'ai' && st.char) { if (st.char === '+' ? !it.characters.includes('+') : !it.characters.includes(st.char)) return false; }
     if (st.hideUsed && used.has(it.id)) return false;
     if (st.plat && it.platform !== st.plat) return false;
     if (st.q) {
@@ -71,7 +75,30 @@
   };
 
   // ---- renderers ----
+  const aiCard = (it) => {
+    const pl = it.platform === 'Instagram' ? '<span class="badge ig">Instagram</span>' : '<span class="badge tt">TikTok</span>';
+    const st2 = it.status ? `<span class="badge ok">${esc(it.status)}</span>` : `<span class="badge">${esc(it.difficulty)}</span>`;
+    const third = it.x ? `<div class="stat"><b>${fx(it.x)}</b><span>vs followers</span></div>` : `<div class="stat"><b>${it.length_s ? Math.round(it.length_s) + 's' : '—'}</b><span>length</span></div>`;
+    return `<article class="card ${used.has(it.id) ? 'used' : ''} ${it.status ? 'made' : ''}" data-id="${esc(it.id)}">
+      <div class="card-top"><span class="rank">#${it.rank}</span><div class="badges">${pl}<span class="badge core">${esc(it.characters)}</span>${st2}</div></div>
+      <div><div class="format">${esc(it.format)}</div><div class="creator">${esc(it.creator)} · ${esc(it.tool)}</div></div>
+      <div class="tv" data-copy="${esc(it.tv)}"><span class="lbl">On-screen text</span>${esc(it.tv)}<span class="copy">Copy</span></div>
+      <div class="stats"><div class="stat"><b>${fmt(it.views)}</b><span>views</span></div>${third}<div class="stat"><b>${it.share_rate != null ? it.share_rate.toFixed(1) + '%' : '—'}</b><span>shared</span></div></div>
+      <div class="field"><b>Scene:</b> ${esc(it.scene)}</div>
+      <div class="field"><b>Move to copy:</b> ${esc(it.motion)}</div>
+      <div class="more"><div class="field"><b>Why it works:</b> ${esc(it.why)}</div>${it.cost ? `<div class="field"><b>Rough cost:</b> ${esc(it.cost)}</div>` : ''}</div>
+      <div class="actions">
+        <a class="btn primary" href="${esc(it.url)}" target="_blank" rel="noopener">Watch ref ↗</a>
+        <button class="btn" data-act="more">Details</button>
+        <span class="spacer"></span>
+        <button class="btn icon star ${saved.has(it.id) ? 'on' : ''}" data-act="save" title="Save idea">★</button>
+        <button class="btn icon usedb ${used.has(it.id) ? 'on' : ''}" data-act="used" title="Mark as made">✓</button>
+      </div>
+    </article>`;
+  };
+
   const card = (it) => {
+    if (it.src === 'ai') return aiCard(it);
     const pl = it.platform === 'Instagram' ? '<span class="badge ig">Instagram</span>' : '<span class="badge tt">TikTok</span>';
     const seen = it.watched ? '<span class="badge ok">Watched</span>' : `<span class="badge warn">${it.fromCaption ? 'From caption' : 'Not watched'}</span>`;
     const tier = it.tier ? `<span class="badge ${it.tier === 'core' ? 'core' : ''}">${({core:'Trading',nearby:'Work / AI',broad:'General'})[it.tier] || it.tier}</span>` : '';
@@ -126,11 +153,14 @@
     const tableTab = st.tab === 'all' || st.tab === 'daily';
     $('#plat-wrap').hidden = !(st.tab === 'all' || st.tab === 'saved');
     $('#view-seg').style.display = tableTab ? 'none' : '';
+    $('#tier-chips').hidden = st.tab === 'ai';
+    $('#char-chips').hidden = st.tab !== 'ai';
     document.querySelectorAll('#view-seg button').forEach((b) => b.classList.toggle('on', b.dataset.view === st.view));
 
     let src;
     if (st.tab === 'tiktok') src = T;
     else if (st.tab === 'instagram') src = I;
+    else if (st.tab === 'ai') src = AI;
     else if (st.tab === 'saved') src = [...saved].map((id) => byId.get(id)).filter(Boolean);
     else if (st.tab === 'daily') src = DY;
     else src = ALL;
@@ -168,6 +198,7 @@
     $('#c-tiktok').textContent = T.length;
     $('#c-instagram').textContent = I.length;
     $('#c-saved').textContent = saved.size;
+    $('#c-ai').textContent = AI.length;
     $('#c-daily').textContent = DY.length;
     $('#c-all').textContent = ALL.length;
   };
@@ -180,7 +211,8 @@
 
   // ---- events ----
   $('#tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; st.tab = b.dataset.tab; st.limit = 120; history.replaceState(null, '', '#' + st.tab); render(); window.scrollTo({ top: 0 }); });
-  $('#tier-chips').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (!b) return; st.tier = b.dataset.tier; document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c === b)); render(); });
+  $('#tier-chips').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (!b) return; st.tier = b.dataset.tier; document.querySelectorAll('#tier-chips .chip').forEach((c) => c.classList.toggle('on', c === b)); render(); });
+  $('#char-chips').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (!b) return; st.char = b.dataset.char; document.querySelectorAll('#char-chips .chip').forEach((c) => c.classList.toggle('on', c === b)); render(); });
   $('#view-seg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; st.view = b.dataset.view; try { localStorage.setItem('vmr_view', st.view); } catch {} render(); });
   $('#sort').addEventListener('change', (e) => { st.sort = e.target.value; render(); });
   $('#plat').addEventListener('change', (e) => { st.plat = e.target.value; render(); });
@@ -207,7 +239,7 @@
   // ---- boot ----
   const m = D.meta || {};
   $('#meta-line').textContent = `Updated ${m.updated || ''} · ${T.length} TikTok + ${I.length} Instagram top formats · ${ALL.length} more outliers`;
-  if (!['tiktok', 'instagram', 'saved', 'daily', 'all'].includes(st.tab)) st.tab = 'tiktok';
+  if (!['tiktok', 'instagram', 'ai', 'saved', 'daily', 'all'].includes(st.tab)) st.tab = 'tiktok';
   counts();
   render();
 })();

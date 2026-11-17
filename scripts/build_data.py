@@ -31,6 +31,7 @@ out = {
     'tiktok_rest': load('remainder.csv'),
     'instagram_rest': load('remainder_ig.csv'),
     'daily': load('daily.csv'),
+    'ai': load('ai_recreate.csv'),
 }
 with open(os.path.join(ROOT, 'data.js'), 'w', encoding='utf-8') as f:
     f.write('window.DATA = ' + json.dumps(out, ensure_ascii=False) + ';\n')
