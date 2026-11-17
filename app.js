@@ -44,7 +44,7 @@
   try { const v = localStorage.getItem('vmr_view'); if (v) st.view = v; } catch {}
 
   const HINTS = {
-    tiktok: 'Top 50 TikTok formats from the last 7 days. Tap the blue line to copy the trading version. ★ saves an idea, ✓ marks it as used once you have made it.',
+    tiktok: 'Top 50 TikTok formats from the last 7 days. Tap the coral line to copy the trading version. ★ saves an idea, ✓ marks it as used once you have made it.',
     instagram: 'Top 50 Instagram reels from the last 14 days. Instagram gives no follower counts, so "vs their usual" compares against the account’s own recent reels. Hooks are written from captions, so watch before building.',
     saved: 'Everything you starred, across both platforms. Saved in this browser.',
     daily: 'New outliers from each daily 24-hour scan, newest day first.',
