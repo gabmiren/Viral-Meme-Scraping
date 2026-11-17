@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Viral Meme Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <div>
+      <h1>Viral Meme Radar</h1>
+      <p class="sub" id="meta-line">Loading…</p>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12zm0-2a8 8 0 1 0 4.9 14.3l4.4 4.4 1.4-1.4-4.4-4.4A8 8 0 0 0 10 2z"/></svg>
+    <input id="q" type="search" placeholder="Search hooks, formats, creators…  ( / )" autocomplete="off">
+  </div>
+</header>
+
+<nav class="tabs" id="tabs" role="tablist">
+  <button data-tab="tiktok" class="active">TikTok <span class="pill" id="c-tiktok"></span></button>
+  <button data-tab="instagram">Instagram <span class="pill" id="c-instagram"></span></button>
+  <button data-tab="saved">★ Saved <span class="pill" id="c-saved"></span></button>
+  <button data-tab="daily">Daily finds <span class="pill" id="c-daily"></span></button>
+  <button data-tab="all">All outliers <span class="pill" id="c-all"></span></button>
+</nav>
+
+<section class="controls" id="controls">
+  <div class="chips" id="tier-chips">
+    <button data-tier="" class="chip on">All niches</button>
+    <button data-tier="core" class="chip">Trading</button>
+    <button data-tier="nearby" class="chip">Work / AI / Finance</button>
+    <button data-tier="broad" class="chip">General</button>
+  </div>
+  <div class="right-controls">
+    <label class="toggle" id="plat-wrap" hidden>
+      <select id="plat"><option value="">Both platforms</option><option value="TikTok">TikTok</option><option value="Instagram">Instagram</option></select>
+    </label>
+    <label class="toggle"><input type="checkbox" id="hide-used"> Hide used</label>
+    <select id="sort">
+      <option value="rank">Sort: Rank</option>
+      <option value="views">Most views</option>
+      <option value="x">Biggest outlier</option>
+      <option value="share_rate">Most shared</option>
+      <option value="length_s">Shortest first</option>
+    </select>
+    <div class="seg" id="view-seg">
+      <button data-view="cards" class="on" title="Card view">▦</button>
+      <button data-view="list" title="Compact list">☰</button>
+    </div>
+  </div>
+</section>
+
+<p class="hint" id="hint"></p>
+<main id="main"></main>
+<div class="empty" id="empty" hidden>Nothing matches. Try clearing the search or filters.</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
