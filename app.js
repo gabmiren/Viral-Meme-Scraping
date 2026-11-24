@@ -37,6 +37,9 @@
   const IR = (D.instagram_rest || []).map((r) => norm(r, 'Instagram', 'rest'));
   const DY = (D.daily || []).map((r) => norm(r, 'TikTok', 'daily'));
   const AI = (D.ai || []).map((r) => norm(r, r.platform || 'TikTok', 'ai'));
+  const FRESH_DAYS = 5;
+  const isFresh = (it) => { const d = /^\d{4}-\d{2}-\d{2}$/.test(it.posted) ? it.posted : (/^\d{4}-\d{2}-\d{2}$/.test(it.date) ? it.date : null); if (!d) return true; return (Date.now() - new Date(d + 'T00:00:00').getTime()) / 864e5 <= FRESH_DAYS + 0.5; };
+  [T, I, TR, IR, DY, AI].forEach((arr) => { for (let k = arr.length - 1; k >= 0; k--) if (!isFresh(arr[k])) arr.splice(k, 1); });
   const ALL = [...TR, ...IR];
   const byId = new Map();
   [...DY, ...ALL, ...T, ...I, ...AI].forEach((it) => byId.set(it.id, it));
@@ -46,11 +49,11 @@
   try { const v = localStorage.getItem('vmr_view'); if (v) st.view = v; } catch {}
 
   const HINTS = {
-    tiktok: 'Top 50 TikTok formats from the last 7 days. Tap the coral line to copy the trading version. ★ saves an idea, ✓ marks it as used once you have made it.',
-    instagram: 'Top 50 Instagram reels from the last 14 days. Instagram gives no follower counts, so "vs their usual" compares against the account’s own recent reels. Hooks are written from captions, so watch before building.',
+    tiktok: 'Top TikTok formats posted in the last 48 hours. Tap the coral line to copy the trading version. ★ saves an idea, ✓ marks it as used once you have made it.',
+    instagram: 'Top Instagram reels posted in the last 48 hours. Instagram gives no follower counts, so "vs their usual" compares against the account’s own recent reels. Hooks are written from captions, so watch before building.',
     ai: 'Videos a real person performs on camera, so Mark or Cyan can re-perform them with Genjutsu or Seedance. No clips with text pasted on top. Each card says who plays it, the scene to set up, the move to copy and roughly what it costs.',
     saved: 'Everything you starred, across both platforms. Saved in this browser.',
-    daily: 'New outliers from each daily 24-hour scan, newest day first.',
+    daily: 'Every outlier the latest scan found, newest scan first. Anything posted more than 5 days ago drops off the page automatically.',
     all: 'Every other outlier from the scans. Click a row to expand the caption and breakdown.',
   };
 
@@ -238,7 +241,7 @@
 
   // ---- boot ----
   const m = D.meta || {};
-  $('#meta-line').textContent = `Updated ${m.updated || ''} · ${T.length} TikTok + ${I.length} Instagram top formats · ${ALL.length} more outliers`;
+  $('#meta-line').textContent = `Updated ${m.updated || ''} · ${m.window || ''} · ${T.length} TikTok + ${I.length} Instagram picks · only content from the last 5 days`;
   if (!['tiktok', 'instagram', 'ai', 'saved', 'daily', 'all'].includes(st.tab)) st.tab = 'tiktok';
   counts();
   render();
